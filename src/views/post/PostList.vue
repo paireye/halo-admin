@@ -473,6 +473,19 @@
               href="javascript:;"
               @click="handleShowPostSettings(post)"
             >设置</a>
+
+            <a-divider type="vertical" />
+
+          </span>
+
+          <span
+            slot="shareEmail"
+            slot-scope="text, post"
+          >
+            <a
+              href="javascript:;"
+              @click="handleShowEmailSetting(post)"
+            >邮件分享</a>
           </span>
         </a-table>
         <div class="page-wrapper">
@@ -515,12 +528,22 @@
       :id="selectedPost.id"
       @close="onPostCommentsClose"
     />
+
+    <EmailSetting
+      :visible="emailSettingVisible"
+      :title="selectedPost.title"
+      :description="selectedPost.summary"
+      :target="`posts`"
+      :id="selectedPost.id"
+      @close="onEmailSettingsClose"
+    />
   </div>
 </template>
 
 <script>
 import { mixin, mixinDevice } from '@/utils/mixin.js'
 import PostSettingDrawer from './components/PostSettingDrawer'
+import EmailSetting from './components/EmailSetting'
 import TargetCommentDrawer from '../comment/components/TargetCommentDrawer'
 import TagSelect from './components/TagSelect'
 import CategoryTree from './components/CategoryTree'
@@ -572,8 +595,15 @@ const columns = [
   },
   {
     title: '操作',
+    dataIndex: 'action',
     width: '180px',
     scopedSlots: { customRender: 'action' }
+  },
+  {
+    title: '分享',
+    dataIndex: 'shareEmail',
+    width: '70px',
+    scopedSlots: { customRender: 'shareEmail' }
   }
 ]
 export default {
@@ -582,7 +612,8 @@ export default {
     TagSelect,
     CategoryTree,
     PostSettingDrawer,
-    TargetCommentDrawer
+    TargetCommentDrawer,
+    EmailSetting,
   },
   mixins: [mixin, mixinDevice],
   data() {
@@ -617,8 +648,10 @@ export default {
       categoriesLoading: false,
       postSettingVisible: false,
       postCommentVisible: false,
+      emailSettingVisible: false,
       selectedPost: {},
       selectedTagIds: [],
+      selectedEmailIds: [],
       selectedCategoryIds: []
     }
   },
@@ -794,6 +827,7 @@ export default {
       postApi.get(post.id).then((response) => {
         this.selectedPost = response.data.data
         this.selectedTagIds = this.selectedPost.tagIds
+        this.selectedEmailIds = this.selectedPost.emailIds
         this.selectedCategoryIds = this.selectedPost.categoryIds
         this.selectedMetas = this.selectedPost.metas
         this.postSettingVisible = true
@@ -803,6 +837,13 @@ export default {
       postApi.get(post.id).then((response) => {
         this.selectedPost = response.data.data
         this.postCommentVisible = true
+      })
+    },
+    handleShowEmailSetting(post) {
+      postApi.get(post.id).then((response) => {
+        this.selectedPost = response.data.data
+        this.selectedEmailIds = this.selectedPost.emailIds
+        this.emailSettingVisible = true
       })
     },
     handlePreview(postId) {
@@ -820,6 +861,11 @@ export default {
       setTimeout(() => {
         this.handleListPosts(false)
       }, 500)
+    },
+    // 关闭邮箱设置抽屉
+    onEmailSettingsClose() {
+      this.emailSettingVisible = false
+      this.selectedPost = {}
     },
     onPostCommentsClose() {
       this.postCommentVisible = false

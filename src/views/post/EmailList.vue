@@ -14,7 +14,7 @@
           :bodyStyle="{ padding: '16px' }"
         >
           <a-form-model
-            ref="tagForm"
+            ref="emailForm"
             :model="form.model"
             :rules="form.rules"
             layout="horizontal"
@@ -26,33 +26,27 @@
             >
               <a-input v-model="form.model.name" />
             </a-form-model-item>
+
             <a-form-model-item
-              label="别名："
-              help="* 一般为单个标签页面的标识，最好为英文"
-              prop="slug"
+              label="邮箱："
+              help="* 邮箱"
+              prop="value"
             >
-              <a-input v-model="form.model.slug" />
+              <a-input v-model="form.model.value" />
             </a-form-model-item>
+
             <a-form-model-item
-              label="封面图："
-              help="* 在标签页面可展示，需要主题支持"
-              prop="thumbnail"
+              label="描述："
+              help="* 一般为单个邮箱页面的标识，最好为英文"
+              prop="description"
             >
-              <a-input v-model="form.model.thumbnail">
-                <a
-                  href="javascript:void(0);"
-                  slot="addonAfter"
-                  @click="thumbnailDrawer.visible = true"
-                >
-                  <a-icon type="picture" />
-                </a>
-              </a-input>
+              <a-input v-model="form.model.description" />
             </a-form-model-item>
             <a-form-model-item>
               <ReactiveButton
                 v-if="!isUpdateMode"
                 type="primary"
-                @click="handleCreateOrUpdateTag"
+                @click="handleCreateOrUpdateEmail"
                 @callback="handleSavedCallback"
                 :loading="form.saving"
                 :errored="form.errored"
@@ -63,7 +57,7 @@
               <a-button-group v-else>
                 <ReactiveButton
                   type="primary"
-                  @click="handleCreateOrUpdateTag"
+                  @click="handleCreateOrUpdateEmail"
                   @callback="handleSavedCallback"
                   :loading="form.saving"
                   :errored="form.errored"
@@ -78,8 +72,8 @@
                 </a-button>
               </a-button-group>
               <a-popconfirm
-                :title="'你确定要删除【' + form.model.name + '】标签？'"
-                @confirm="handleDeleteTag(form.model.id)"
+                :title="'你确定要删除【' + form.model.name +'<'+form.model.value + '>】邮箱？'"
+                @confirm="handleDeleteEmail(form.model.id)"
                 okText="确定"
                 cancelText="取消"
                 v-if="isUpdateMode"
@@ -103,41 +97,35 @@
         class="pb-3"
       >
         <a-card
-          title="所有标签"
+          title="所有邮箱"
           :bodyStyle="{ padding: '16px' }"
         >
           <a-spin :spinning="list.loading">
             <a-empty v-if="list.data.length==0" />
             <a-tooltip
               placement="topLeft"
-              v-for="tag in list.data"
-              :key="tag.id"
+              v-for="email in list.data"
+              :key="email.id"
               v-else
             >
               <template slot="title">
-                <span>{{ tag.postCount }} 篇文章</span>
+                <span>{{ email.postCount }} 篇文章</span>
               </template>
               <a-tag
                 color="blue"
                 style="margin-bottom: 8px;cursor:pointer;"
-                @click="form.model = tag"
-              >{{ tag.name }}</a-tag>
+                @click="form.model = email"
+              >{{ email.name }}<{{ email.value }}></a-tag>
             </a-tooltip>
           </a-spin>
         </a-card>
       </a-col>
     </a-row>
-
-    <AttachmentSelectDrawer
-      v-model="thumbnailDrawer.visible"
-      @listenToSelect="handleSelectThumbnail"
-      title="选择封面图"
-    />
   </div>
 </template>
 
 <script>
-import tagApi from '@/api/tag'
+import emailApi from '@/api/email'
 
 export default {
   data() {
@@ -152,36 +140,35 @@ export default {
         errored: false,
         rules: {
           name: [
-            { required: true, message: '* 标签名称不能为空', trigger: ['change'] },
-            { max: 255, message: '* 标签名称的字符长度不能超过 255', trigger: ['change'] }
+            { required: true, message: '* 邮箱名称不能为空', trigger: ['change'] },
+            { max: 255, message: '* 邮箱名称的字符长度不能超过 255', trigger: ['change'] }
           ],
-          slug: [{ max: 255, message: '* 标签别名的字符长度不能超过 255', trigger: ['change'] }],
-          thumbnail: [{ max: 1023, message: '* 封面图链接的字符长度不能超过 1023', trigger: ['change'] }]
+          value: [
+            { required: true, message: '* 邮箱账号不能为空', trigger: ['change'] },
+            { type: 'email', message: '* 邮箱账号格式不正确', trigger: ['change'] }
+          ]
         }
-      },
-      thumbnailDrawer: {
-        visible: false
       }
     }
   },
   computed: {
     title() {
       if (this.isUpdateMode) {
-        return '修改标签'
+        return '修改邮箱'
       }
-      return '添加标签'
+      return '添加邮箱'
     },
     isUpdateMode() {
       return !!this.form.model.id
     }
   },
   created() {
-    this.handleListTags()
+    this.handleListEmails()
   },
   methods: {
-    handleListTags() {
+    handleListEmails() {
       this.list.loading = true
-      tagApi
+      emailApi
         .listAll(true)
         .then(response => {
           this.list.data = response.data.data
@@ -192,19 +179,19 @@ export default {
           }, 200)
         })
     },
-    handleDeleteTag(tagId) {
-      tagApi.delete(tagId).finally(() => {
+    handleDeleteEmail(emailId) {
+      emailApi.delete(emailId).finally(() => {
         this.form.model = {}
-        this.handleListTags()
+        this.handleListEmails()
       })
     },
-    handleCreateOrUpdateTag() {
+    handleCreateOrUpdateEmail() {
       const _this = this
-      _this.$refs.tagForm.validate(valid => {
+      _this.$refs.emailForm.validate(valid => {
         if (valid) {
           this.form.saving = true
           if (_this.isUpdateMode) {
-            tagApi
+            emailApi
               .update(_this.form.model.id, _this.form.model)
               .catch(() => {
                 this.form.errored = true
@@ -215,7 +202,7 @@ export default {
                 }, 400)
               })
           } else {
-            tagApi
+            emailApi
               .create(_this.form.model)
               .catch(() => {
                 this.form.errored = true
@@ -235,12 +222,8 @@ export default {
         _this.form.errored = false
       } else {
         _this.form.model = {}
-        _this.handleListTags()
+        _this.handleListEmails()
       }
-    },
-    handleSelectThumbnail(data) {
-      this.$set(this.form.model, 'thumbnail', encodeURI(data.path))
-      this.thumbnailDrawer.visible = false
     }
   }
 }

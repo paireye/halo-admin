@@ -48,6 +48,12 @@ export const asyncRouterMap = [
             name: 'TagList',
             component: () => import('@/views/post/TagList'),
             meta: { title: '标签', hiddenHeaderContent: false }
+          },
+          {
+            path: '/emails',
+            name: 'EmailList',
+            component: () => import('@/views/post/EmailList'),
+            meta: { title: '邮箱', hiddenHeaderContent: false }
           }
         ]
       },

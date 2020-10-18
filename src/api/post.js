@@ -51,6 +51,24 @@ postApi.update = (postId, postToUpdate, autoSave) => {
   })
 }
 
+postApi.updateByEmail = (postId, postToUpdate, autoSave) => {
+  return service({
+    url: `${baseUrl}/emails/${postId}`,
+    method: 'put',
+    data: postToUpdate,
+    params: {
+      autoSave: autoSave
+    }
+  })
+}
+
+postApi.getPostEmail = (postId) => {
+  return service({
+    url: `${baseUrl}/emails/${postId}`,
+    method: 'get'
+  })
+}
+
 postApi.updateDraft = (postId, content) => {
   return service({
     url: `${baseUrl}/${postId}/status/draft/content`,

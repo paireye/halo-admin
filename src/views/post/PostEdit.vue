@@ -29,12 +29,14 @@
     <PostSettingDrawer
       :post="postToStage"
       :tagIds="selectedTagIds"
+      :emailIds="selectedEmailIds"
       :categoryIds="selectedCategoryIds"
       :metas="selectedMetas"
       :visible="postSettingVisible"
       @close="postSettingVisible = false"
       @onRefreshPost="onRefreshPostFromSetting"
       @onRefreshTagIds="onRefreshTagIdsFromSetting"
+      @onRefreshEmailIds="onRefreshEmailIdsFromSetting"
       @onRefreshCategoryIds="onRefreshCategoryIdsFromSetting"
       @onRefreshPostMetas="onRefreshPostMetasFromSetting"
       @onSaved="handleRestoreSavedStatus"
@@ -98,6 +100,7 @@ export default {
       postSettingVisible: false,
       postToStage: {},
       selectedTagIds: [],
+      selectedEmailIds: [],
       selectedCategoryIds: [],
       selectedMetas: [],
       contentChanges: 0,
@@ -115,6 +118,7 @@ export default {
           const post = response.data.data
           vm.postToStage = post
           vm.selectedTagIds = post.tagIds
+          vm.selectedEmailIds = post.emailIds
           vm.selectedCategoryIds = post.categoryIds
           vm.selectedMetas = post.metas
         })
@@ -290,6 +294,9 @@ export default {
     },
     onRefreshTagIdsFromSetting(tagIds) {
       this.selectedTagIds = tagIds
+    },
+    onRefreshEmailIdsFromSetting(emailIds) {
+      this.selectedEmailIds = emailIds
     },
     onRefreshCategoryIdsFromSetting(categoryIds) {
       this.selectedCategoryIds = categoryIds

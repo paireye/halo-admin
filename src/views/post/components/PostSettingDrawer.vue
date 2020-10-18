@@ -166,7 +166,7 @@
               @click="thumbDrawerVisible=true"
             >
 
-            <a-form layout="vertial">
+            <a-form layout="vertical">
               <a-form-item>
                 <a-input
                   v-model="selectedPost.thumbnail"
